@@ -43,6 +43,16 @@ document.addEventListener('DOMContentLoaded', () => {
     art.addEventListener('focusin', () => showFor(art));
     art.addEventListener('mouseleave', hideShared);
     art.addEventListener('focusout', hideShared);
+    // Touch and click support: show tooltip on tap and prevent the document click handler
+    art.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      showFor(art);
+    });
+    art.addEventListener('touchstart', (ev) => {
+      // Prevent a subsequent click from immediately hiding the tooltip and show on touch
+      ev.stopPropagation();
+      showFor(art);
+    }, { passive: true });
   });
 
   // Also attach the shared tooltip behavior to any articles in the Tools & Databases tile (e.g., MySQL)
@@ -52,11 +62,27 @@ document.addEventListener('DOMContentLoaded', () => {
     art.addEventListener('focusin', () => showFor(art));
     art.addEventListener('mouseleave', hideShared);
     art.addEventListener('focusout', hideShared);
+    art.addEventListener('click', (ev) => {
+      ev.stopPropagation();
+      showFor(art);
+    });
+    art.addEventListener('touchstart', (ev) => {
+      ev.stopPropagation();
+      showFor(art);
+    }, { passive: true });
   });
 
+  // Hide the tooltip when clicking/tapping outside both the tooltip and any article
   document.addEventListener('click', (e) => {
-    if (!shared.contains(e.target)) hideShared();
+    const clickedInsideShared = shared.contains(e.target);
+    const clickedInsideArticle = Array.from(document.querySelectorAll('#experience .article-container article')).some(a => a.contains(e.target));
+    if (!clickedInsideShared && !clickedInsideArticle) hideShared();
   });
+  document.addEventListener('touchstart', (e) => {
+    const touchedInsideShared = shared.contains(e.target);
+    const touchedInsideArticle = Array.from(document.querySelectorAll('#experience .article-container article')).some(a => a.contains(e.target));
+    if (!touchedInsideShared && !touchedInsideArticle) hideShared();
+  }, { passive: true });
 });
 
 // content mapping for shared tooltip
